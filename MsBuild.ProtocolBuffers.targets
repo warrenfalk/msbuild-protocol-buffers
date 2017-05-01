@@ -1,0 +1,55 @@
+<Project InitialTargets="ProtoCalcOutput">
+    <!-- load the correct msbuild extension assembly based on the framework of the build system -->
+    <PropertyGroup>
+        <BuildFramework>net45</BuildFramework>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Core'">
+        <BuildFramework>netstandard1.6</BuildFramework>
+    </PropertyGroup>
+    <UsingTask TaskName="ProtoC" AssemblyFile="..\lib\$(BuildFramework)\MsBuild.ProtocolBuffers.dll" />
+    <UsingTask TaskName="CalcProtoOutputs" AssemblyFile="..\lib\$(BuildFramework)\MsBuild.ProtocolBuffers.dll" />
+    
+    <ItemGroup>
+        <AvailableItemName Include="ProtoC" />
+    </ItemGroup>
+
+    <!-- Note: this ItemGroup is correct behavior when all files are auto loaded as is the case with SDK projects
+         but the old csproj where items were explicitly added, this may not be the best behavior - may need to
+         consider that scenario -->
+    <ItemGroup>
+        <ProtoOutput Include="**/*.proto.cs" />
+        <ProtoC Include="**/*.proto" />
+    </ItemGroup>
+
+    <Target Name="ProtoClean" BeforeTargets="Clean">
+        <Delete Files="@(ProtoOutput)" />
+    </Target>
+
+    <!-- This target translates all .proto item specs into the output spec -->
+    <Target Name="ProtoCalcOutput" BeforeTargets="CoreCompile;ProtoGen">
+        <CalcProtoOutputs Inputs="@(ProtoC)">
+            <Output TaskParameter="InputsWithOutput" ItemName="ProtoMapped" />
+        </CalcProtoOutputs>
+        <ItemGroup>
+            <Compile Remove="@(ProtoOutput)" />
+            <Compile Include="@(ProtoMapped -> '%(OutputSpec)')" />
+            <FileWrites Include="@(ProtoMapped -> '%(OutputSpec)')" />
+        </ItemGroup>
+        <Message Text="Inputs:  @(ProtoMapped)" />
+        <Message Text="Outputs: @(ProtoMapped -> '%(OutputSpec)')" />
+    </Target>
+
+    <!-- This target compiles the .proto files which are out of date -->
+    <Target
+        Name="ProtoGen"
+        BeforeTargets="CoreCompile"
+        Inputs="@(ProtoMapped)"
+        Outputs="@(ProtoMapped -> '%(OutputSpec)')"
+        DependsOnTargets="ProtoCalcOutput;RunResolvePackageDependencies">
+        <ItemGroup>
+            <ProtoTools Include="@(PackageDefinitions)" Condition="%(Name) == 'Google.Protobuf.Tools'"/>
+        </ItemGroup>
+        <ProtoC Inputs="@(ProtoMapped)" ProtoToolsPath="%(ProtoTools.ResolvedPath)" />
+    </Target>
+
+</Project>

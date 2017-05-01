@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>MsBuild.ProtocolBuffers</id>
+    <version>1.0.0</version>
+    <title>MSBuild Protocol Buffers</title>
+    <authors>Warren Falk</authors>
+    <owners>Warren Falk</owners>
+    <licenseUrl>https://raw.githubusercontent.com/warrenfalk/msbuild-protocol-buffers/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/warrenfalk/msbuild-protocol-buffers</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Automatic compiling of .proto files</description>
+    <releaseNotes>.</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>protobuf proto3 proto msbuild protocolbuffers protocolbuffer protocol-buffers protocol-buffer</tags>
+  </metadata>
+  <files>
+    <file src="MsBuild.ProtocolBuffers.targets" target="build" />
+    <file src="bin\Release\net45\MsBuild.ProtocolBuffers.dll" target="lib\net45" />
+    <file src="bin\Release\net45\System.Runtime.InteropServices.RuntimeInformation.dll" target="lib\net45" />
+    <file src="bin\Release\net45\MsBuild.ProtocolBuffers.pdb" target="lib\net45" />
+    <file src="bin\Release\netstandard1.6\MsBuild.ProtocolBuffers.dll" target="lib\netstandard1.6" />
+    <file src="bin\Release\netstandard1.6\MsBuild.ProtocolBuffers.pdb" target="lib\netstandard1.6" />
+  </files>
+</package>
