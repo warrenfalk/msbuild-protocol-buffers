@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>MsBuild.ProtocolBuffers</id>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <title>MSBuild Protocol Buffers</title>
     <authors>Warren Falk</authors>
     <owners>Warren Falk</owners>
@@ -13,6 +13,9 @@
     <releaseNotes>.</releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>protobuf proto3 proto msbuild protocolbuffers protocolbuffer protocol-buffers protocol-buffer</tags>
+    <dependencies>
+      <dependency id="Google.Protobuf.Tools" version="3.0.0" />
+    </dependencies>
   </metadata>
   <files>
     <file src="MsBuild.ProtocolBuffers.targets" target="build" />
