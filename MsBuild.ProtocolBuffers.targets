@@ -49,7 +49,7 @@
         <ItemGroup>
             <ProtoTools Include="@(PackageDefinitions)" Condition="%(Name) == 'Google.Protobuf.Tools'"/>
         </ItemGroup>
-        <ProtoC Inputs="@(ProtoMapped)" ProtoToolsPath="%(ProtoTools.ResolvedPath)" />
+        <ProtoC Inputs="@(ProtoMapped)" ProtoToolsPath="%(ProtoTools.ResolvedPath)" Includes="$(ProtoIncludes)" />
     </Target>
 
 </Project>

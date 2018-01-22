@@ -15,3 +15,33 @@ Install-Package MsBuild.ProtocolBuffers
 ```
 
 Then just add .proto files to the project and .proto.cs files will be generated and included alongside them.
+
+## Options
+
+By default, all ```.proto``` files in the project will be included in the code generation.  You can customize this, however with the ```ProtoC``` element in your msbuild.
+
+```xml
+<ItemGroup>
+  <ProtoC Remove="**\*.proto"/>
+  <ProtoC Include="proto\**\*.proto"/>
+</ItemGroup>
+```
+
+By default the output ```.proto.cs``` files are placed alongside the ```.proto``` files in the same directory.
+You can override this by specifying what the base of your include is, and the base of your output:
+
+```xml
+<ItemGroup>
+  <ProtoC Remove="**\*.proto"/>
+  <ProtoC Include="proto-input\**\*.proto" InputBase="proto-input" OutputBase="proto-output"/>
+</ItemGroup>
+```
+
+You can also modify the default include path of ```.``` with the ```<ProtoIncludes>``` element:
+
+```xml
+<PropertyGroup>
+  <ProtoIncludes>.;..\..\my\other\protos</ProtoIncludes>
+</PropertyGroup>
+```
+

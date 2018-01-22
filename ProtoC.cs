@@ -21,6 +21,8 @@ namespace MsBuild.ProtocolBuffers
 
         public string OutputFolder { get; set; } = ".";
 
+        public string Includes { get; set; } = ".";
+
         /* Some noteworthy observations:
          * 
          * Output Directory structure:
@@ -44,7 +46,7 @@ namespace MsBuild.ProtocolBuffers
         {
             OutputFiles = Inputs.Select(inc => new TaskItem
             {
-                ItemSpec = Path.Combine(Path.GetDirectoryName(inc.ItemSpec), Path.GetFileNameWithoutExtension(inc.ItemSpec).SnakeToPascalCase() + Path.GetExtension(inc.ItemSpec) + ".cs"),
+                ItemSpec = inc.GetMetadata("OutputSpec") ?? Path.Combine(Path.GetDirectoryName(inc.ItemSpec), Path.GetFileNameWithoutExtension(inc.ItemSpec).SnakeToPascalCase() + Path.GetExtension(inc.ItemSpec) + ".cs"),
             })
             .ToArray();
 
@@ -75,15 +77,16 @@ namespace MsBuild.ProtocolBuffers
 
             foreach (var entry in directories)
             {
-                var dir = entry.Key;
+                var dirPair = entry.Key;
                 var files = entry.Value;
-                var inputs = string.Join(" ", files.Select(file => $"\"{Path.Combine(dir, file)}\""));
-                var arguments = $" --error_format=msvs -I\"{protocInclude}\" -I. --csharp_out={Path.Combine(OutputFolder, dir)} --csharp_opt=file_extension=.proto.cs {inputs}";
+                var inputs = string.Join(" ", files.Select(file => $"\"{Path.Combine(dirPair.InputDir, file)}\""));
+                var outputDir = Path.Combine(OutputFolder, dirPair.OutputDir);
+                var arguments = $" --error_format=msvs -I\"{protocInclude}\" {string.Join(" ", Includes.Split(';').Select(path => $"-I\"{path}\""))} --csharp_out={outputDir} --csharp_opt=file_extension=.proto.cs {inputs}";
                 var cmdLine = $"\"{protocPath}\" {arguments}";
                 Log.LogCommandLine(cmdLine);
 
-                if (!Directory.Exists(OutputFolder))
-                    Directory.CreateDirectory(OutputFolder);
+                if (!Directory.Exists(outputDir))
+                    Directory.CreateDirectory(outputDir);
 
                 var psi = new ProcessStartInfo
                 {
@@ -97,6 +100,7 @@ namespace MsBuild.ProtocolBuffers
                 var proc = Process.Start(psi);
                 //gcc error format
                 var errorPattern = new Regex("^(?<file>.*)\\((?<line>[0-9]+)\\) : error in column=(?<column>[0-9]+): (?<message>.*)$|^(?<file>.*):(?<line>[0-9]+):(?<column>[0-9]+): (?<message>.*)$|^(?<option>.*): (?<file>.*): (?<message>.*)$", RegexOptions.Compiled);
+                var noLinePattern = new Regex("^(?<file>[^:]+): (?<message>.*)$", RegexOptions.Compiled);
                 var warnPattern = new Regex("^\\[(?<sourcemodule>.*) (?<level>.*) (?<sourcefile>.*):(?<sourceline>[0-9]+)\\] (?<message>.*)", RegexOptions.Compiled);
                 var protoFilePattern = new Regex("proto file: (?<filename>.*\\.proto)", RegexOptions.Compiled);
                 var errors = 0;
@@ -125,6 +129,15 @@ namespace MsBuild.ProtocolBuffers
                                 Log.LogWarning("protobuf", null, null, filename, 0, 0, 0, 0, "{0}", message);
                             else
                                 Log.LogWarning("{0}", message);
+                            continue;
+                        }
+                        match = noLinePattern.Match(line);
+                        if (match.Success)
+                        {
+                            var filename = match.Groups["file"].Value;
+                            var message = match.Groups["message"].Value;
+                            errors++;
+                            Log.LogError("protobuf", null, null, filename, 0, 0, 0, 0, message, messageArgs: new string[0]);
                             continue;
                         }
                         Log.LogMessageFromText(line, MessageImportance.High);
