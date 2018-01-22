@@ -7,12 +7,14 @@ IF ERRORLEVEL 1 (
 )
 popd
 
-nuget restore
+msbuild /p:Configuration=Release /t:Restore
+@if %errorlevel% neq 0 exit /b %errorlevel%
+
 msbuild /p:Configuration=Release /t:Rebuild
 @if %errorlevel% neq 0 exit /b %errorlevel%
  
-nuget pack MsBuild.ProtocolBuffers.nuspec
+msbuild /p:Configuration=Release /t:Pack
 @if %errorlevel% neq 0 exit /b %errorlevel%
 
-move *.nupkg c:\nuget.local
+move bin\Release\*.nupkg c:\nuget.local
 popd

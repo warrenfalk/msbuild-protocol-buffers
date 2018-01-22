@@ -3,6 +3,18 @@
   <PropertyGroup>
     <TargetFrameworks>net45;netstandard1.6</TargetFrameworks>
     <RootNamespace>MsBuild.ProtocolBuffers</RootNamespace>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>MsBuild.ProtocolBuffers</PackageId>
+    <Version>1.1.0</Version>
+    <Authors>Warren Falk</Authors>
+    <Company>Warren Falk</Company>
+    <Product>MsBuild.ProtocolBuffers</Product>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/warrenfalk/msbuild-protocol-buffers/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/warrenfalk/msbuild-protocol-buffers</PackageProjectUrl>
+    <Description>Automatic compiling of .proto files</Description>
+    <PackageReleaseNotes>.</PackageReleaseNotes>
+    <Copyright>Copyright 2017</Copyright>
+    <PackageTags>protobuf proto3 proto msbuild protocolbuffers protocolbuffer protocol-buffers protocol-buffer</PackageTags>
   </PropertyGroup>
 
   <ItemGroup Condition="$(TargetFramework) != 'net45'">
@@ -15,5 +27,14 @@
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf.Tools" version="3.5.1" />
+    <Content Include="*.targets">
+      <Pack>true</Pack>
+      <PackagePath>build</PackagePath>
+    </Content>
+  </ItemGroup>
+
 
 </Project>
