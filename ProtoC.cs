@@ -99,10 +99,12 @@ namespace MsBuild.ProtocolBuffers
                 };
                 var proc = Process.Start(psi);
                 //gcc error format
-                var errorPattern = new Regex("^(?<file>.*)\\((?<line>[0-9]+)\\) : error in column=(?<column>[0-9]+): (?<message>.*)$|^(?<file>.*):(?<line>[0-9]+):(?<column>[0-9]+): (?<message>.*)$|^(?<option>.*): (?<file>.*): (?<message>.*)$", RegexOptions.Compiled);
+                var errorPattern = new Regex("^(?<file>.*)\\((?<line>[0-9]+)\\) : error in column=(?<column>[0-9]+): (?<message>.*)$|^(?<file>.*):(?<line>[0-9]+):(?<column>[0-9]+): (?<message>.*)$", RegexOptions.Compiled);
                 var noLinePattern = new Regex("^(?<file>[^:]+): (?<message>.*)$", RegexOptions.Compiled);
                 var warnPattern = new Regex("^\\[(?<sourcemodule>.*) (?<level>.*) (?<sourcefile>.*):(?<sourceline>[0-9]+)\\] (?<message>.*)", RegexOptions.Compiled);
                 var protoFilePattern = new Regex("proto file: (?<filename>.*\\.proto)", RegexOptions.Compiled);
+                var fallbackErrorPattern = new Regex("^(?<option>.*): (?<file>.*): (?<message>.*)$", RegexOptions.Compiled);
+                var warningPrefixPattern = new Regex("^warning:\\s?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
                 var errors = 0;
                 var stdErrTask = System.Threading.Tasks.Task.Run(() =>
                 {
@@ -136,8 +138,28 @@ namespace MsBuild.ProtocolBuffers
                         {
                             var filename = match.Groups["file"].Value;
                             var message = match.Groups["message"].Value;
+                            var warnPrefixMatch = warningPrefixPattern.Match(message);
+                            if (warnPrefixMatch.Success)
+                            {
+                                message = warningPrefixPattern.Replace(message, "");
+                                Log.LogWarning("protobuf", null, null, filename, 0, 0, 0, 0, message, messageArgs: new string[0]);
+                            }
+                            else
+                            {
+                                errors++;
+                                Log.LogError("protobuf", null, null, filename, 0, 0, 0, 0, message, messageArgs: new string[0]);
+                            }
+                            continue;
+                        }
+                        match = fallbackErrorPattern.Match(line);
+                        if (match.Success)
+                        {
+                            var filename = match.Groups["file"].Value;
+                            var lineNum = 0;
+                            var columnNum = 0;
+                            var message = match.Groups["message"].Value;
                             errors++;
-                            Log.LogError("protobuf", null, null, filename, 0, 0, 0, 0, message, messageArgs: new string[0]);
+                            Log.LogError("protobuf", null, null, filename, lineNum, columnNum, lineNum, columnNum, message, messageArgs: new string[0]);
                             continue;
                         }
                         Log.LogMessageFromText(line, MessageImportance.High);
