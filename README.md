@@ -1,4 +1,10 @@
-﻿# MsBuild.ProtocolBuffers
+# Notice: Obsolete
+
+The GRPC team with their Grpc.Tools package have incorporated generation of .cs files from .proto files making this package mostly obsolete.  I've switched to their tools myself, and so I'm no longer maintaining this.  The only feature not implemented is that their does not currently seem to be an option to generate files with the extension of ".proto.cs" leaving only the default ".cs".
+
+https://chromium.googlesource.com/external/github.com/grpc/grpc/+/HEAD/src/csharp/BUILD-INTEGRATION.md
+
+# MsBuild.ProtocolBuffers
 
 MSBuild target for automatic compiling of .proto files into .cs files.
 
